@@ -219,6 +219,28 @@ The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
 
 
+SELECT 
+    subq.fac_name, -- GROUP BY
+    SUM(subq.total_cost) AS total_revenue
+FROM (
+    -- subq, for each combo of fac_name and user, how much they spend
+    SELECT 
+        f.name AS fac_name,
+        CASE 
+            WHEN b.memid = 0 
+                THEN f.guestcost * b.slots
+            ELSE
+                f.membercost * b.slots
+        END AS total_cost  -- Calculate total cost
+    FROM Bookings AS b
+    LEFT JOIN Facilities AS f 
+        ON b.facid = f.facid
+    LEFT JOIN Members AS m 
+        ON b.memid = m.memid    
+) AS subq
+GROUP BY subq.fac_name
+HAVING SUM(subq.total_cost) < 1000
+ORDER BY total_revenue DESC;  -- Sort by total cost from highest to lowest
 
 
 
