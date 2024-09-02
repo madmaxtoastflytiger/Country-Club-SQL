@@ -39,9 +39,15 @@ FROM `Facilities`
 WHERE membercost !=0;
 
 
+
+
 /* Q2: How many facilities do not charge a fee to members? */
 
-5 facilities (Tennis Court 1, Tennis Court 2, Massage Room 1, Massage Room 2, Squash Court)
+SELECT COUNT( * ) 
+FROM Facilities
+WHERE membercost = 0;
+
+
 
 
 /* Q3: Write an SQL query to show a list of facilities that charge a fee to members,
@@ -55,6 +61,8 @@ WHERE membercost !=0
     AND membercost < monthlymaintenance * 0.2;
 
 
+
+
 /* Q4: Write an SQL query to retrieve the details of facilities with ID 1 and 5.
 Try writing the query without using the OR operator. */
 
@@ -63,20 +71,61 @@ FROM `Facilities`
 WHERE facid IN (1,5);
 
 
+
+
 /* Q5: Produce a list of facilities, with each labelled as
 'cheap' or 'expensive', depending on if their monthly maintenance cost is
 more than $100. Return the name and monthly maintenance of the facilities
 in question. */
 
+SELECT name, monthlymaintenance,
+    CASE 
+        WHEN monthlymaintenance > 100 THEN 'expensive'
+        ELSE 'cheap'
+    END AS cost_label
+FROM Facilities;
+
+
+
 
 /* Q6: You'd like to get the first and last name of the last member(s)
 who signed up. Try not to use the LIMIT clause for your solution. */
+
+SELECT firstname, surname
+FROM Members
+WHERE joindate = (SELECT MAX(joindate) FROM Members); -- the max join date is the highest num thus more recent
+
+
 
 
 /* Q7: Produce a list of all members who have used a tennis court.
 Include in your output the name of the court, and the name of the member
 formatted as a single column. Ensure no duplicate data, and order by
 the member name. */
+
+-- only booking has info of which member use which facility 
+
+SELECT DISTINCT
+    m.surname,  -- had issue using this code " m.surname || ' ' || m.firstname AS member_name "" as only returns 0, and CONCAT() gives an error
+    m.firstname, 
+    subq.facid,
+    subq.fac_name 
+FROM (
+    SELECT 
+        b.facid,
+        b.memid,
+        f.name AS fac_name
+    FROM Bookings AS b
+    LEFT JOIN Facilities AS f
+        ON b.facid = f.facid
+    WHERE 
+        b.facid IN (0,1) -- 0 and 1 fac id represent the 2 tennis courts
+) AS subq
+LEFT JOIN Members AS m 
+    ON subq.memid = m.memid
+ORDER BY m.surname, m.firstname; -- ordering by surname and firstname
+
+
 
 
 /* Q8: Produce a list of bookings on the day of 2012-09-14 which
@@ -86,8 +135,61 @@ the guest user's ID is always 0. Include in your output the name of the
 facility, the name of the member formatted as a single column, and the cost.
 Order by descending cost, and do not use any subqueries. */
 
+SELECT 
+    f.name AS fac_name,
+    m.surname, -- still having issue concatenating columns together
+    m.firstname,
+    CASE 
+        WHEN b.memid = 0 THEN f.guestcost * b.slots  -- Check guest cost if memid is 0
+        ELSE f.membercost * b.slots  -- Check member cost if memid is not 0
+    END AS total_cost  -- Calculate total cost
+FROM Bookings AS b -- bookings asd both info to connect all 3 tables together
+LEFT JOIN Facilities AS f 
+    ON b.facid = f.facid
+LEFT JOIN Members as m 
+    ON b.memid = m.memid 
+WHERE 
+    b.starttime LIKE '2012-09-14%'
+    AND CASE 
+        WHEN b.memid = 0 THEN f.guestcost * b.slots  -- Check guest cost if memid is 0
+        ELSE f.membercost * b.slots  -- Check member cost if memid is not 0
+    END >= 30  -- Filter for total costs above $30
+ORDER BY 
+    total_cost DESC;  -- Sort by total cost from highest to lowest
+
+
+
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
+
+SELECT 
+    subquery.fac_name,
+    subquery.surname,
+    subquery.firstname,
+    subquery.total_cost
+FROM (
+    SELECT 
+        f.name AS fac_name,
+        m.surname,
+        m.firstname,
+        CASE 
+            WHEN b.memid = 0 THEN f.guestcost * b.slots  -- Check guest cost if memid is 0
+            ELSE f.membercost * b.slots  -- Check member cost if memid is not 0
+        END AS total_cost  -- Calculate total cost
+    FROM Bookings AS b
+    LEFT JOIN Facilities AS f 
+        ON b.facid = f.facid
+    LEFT JOIN Members AS m 
+        ON b.memid = m.memid
+    WHERE 
+        b.starttime LIKE '2012-09-14%'
+) AS subquery
+WHERE 
+    subquery.total_cost >= 30  -- Filter for total costs above $30
+ORDER BY 
+    subquery.total_cost DESC;  -- Sort by total cost from highest to lowest
+
+
 
 
 /* PART 2: SQLite
