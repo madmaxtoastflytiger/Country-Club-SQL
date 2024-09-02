@@ -34,18 +34,22 @@ exploring the data, and getting acquainted with the 3 tables. */
 /* Q1: Some of the facilities charge a fee to members, but some do not.
 Write a SQL query to produce a list of the names of the facilities that do. */
 
-SELECT *
+SELECT 
+    *
 FROM `Facilities`
-WHERE membercost !=0;
+WHERE 
+    membercost !=0;
 
 
 
 
 /* Q2: How many facilities do not charge a fee to members? */
 
-SELECT COUNT( * ) 
+SELECT 
+    COUNT( * ) 
 FROM Facilities
-WHERE membercost = 0;
+WHERE 
+    membercost = 0;
 
 
 
@@ -55,9 +59,14 @@ where the fee is less than 20% of the facility's monthly maintenance cost.
 Return the facid, facility name, member cost, and monthly maintenance of the
 facilities in question. */
 
-SELECT facid, name, membercost, monthlymaintenance
+SELECT 
+    facid, 
+    name, 
+    membercost, 
+    monthlymaintenance
 FROM `Facilities`
-WHERE membercost !=0 
+WHERE 
+    membercost !=0 
     AND membercost < monthlymaintenance * 0.2;
 
 
@@ -66,9 +75,14 @@ WHERE membercost !=0
 /* Q4: Write an SQL query to retrieve the details of facilities with ID 1 and 5.
 Try writing the query without using the OR operator. */
 
-SELECT facid, name, membercost, monthlymaintenance
+SELECT 
+    facid, 
+    name, 
+    membercost, 
+    monthlymaintenance
 FROM `Facilities`
-WHERE facid IN (1,5);
+WHERE 
+    facid IN (1,5);
 
 
 
@@ -78,7 +92,9 @@ WHERE facid IN (1,5);
 more than $100. Return the name and monthly maintenance of the facilities
 in question. */
 
-SELECT name, monthlymaintenance,
+SELECT 
+    name,
+    monthlymaintenance,
     CASE 
         WHEN monthlymaintenance > 100 THEN 'expensive'
         ELSE 'cheap'
@@ -91,9 +107,12 @@ FROM Facilities;
 /* Q6: You'd like to get the first and last name of the last member(s)
 who signed up. Try not to use the LIMIT clause for your solution. */
 
-SELECT firstname, surname
+SELECT 
+    firstname, 
+    surname
 FROM Members
-WHERE joindate = (SELECT MAX(joindate) FROM Members); -- the max join date is the highest num thus more recent
+WHERE 
+    joindate = (SELECT MAX(joindate) FROM Members); -- the max join date is the highest num thus more recent
 
 
 
@@ -123,7 +142,8 @@ FROM (
 ) AS subq
 LEFT JOIN Members AS m 
     ON subq.memid = m.memid
-ORDER BY m.surname, m.firstname; -- ordering by surname and firstname
+ORDER BY 
+    m.surname, m.firstname; -- ordering by surname and firstname
 
 
 
@@ -238,9 +258,12 @@ FROM (
     LEFT JOIN Members AS m 
         ON b.memid = m.memid    
 ) AS subq
-GROUP BY subq.fac_name
-HAVING SUM(subq.total_cost) < 1000
-ORDER BY total_revenue DESC;  -- Sort by total cost from highest to lowest
+GROUP BY 
+    subq.fac_name
+HAVING 
+    SUM(subq.total_cost) < 1000
+ORDER BY 
+    total_revenue DESC;  -- Sort by total cost from highest to lowest
 
 
 
@@ -256,8 +279,10 @@ SELECT
 FROM Members AS m
 LEFT JOIN Members AS recommender -- duplicate members table as recommender 
     ON m.recommendedby = recommender.memid
-WHERE m.recommendedby != 0
-ORDER BY m.surname, m.firstname;
+WHERE 
+    m.recommendedby != 0
+ORDER BY 
+    m.surname, m.firstname;
 
 
 
@@ -278,8 +303,10 @@ FROM (
 ) AS subq
 LEFT JOIN Facilities AS f 
     USING(facid)
-GROUP BY subq.facid
-ORDER BY member_usage DESC;
+GROUP BY 
+    subq.facid
+ORDER BY 
+    member_usage DESC;
 
 
 
@@ -295,4 +322,5 @@ LEFT JOIN Facilities AS f -- this is to get the facilities name
     USING (facid)
 WHERE 
     memid !=0
-GROUP BY MONTH( b.starttime ), f.name
+GROUP BY 
+    MONTH( b.starttime ), f.name
