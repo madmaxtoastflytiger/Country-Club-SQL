@@ -31,14 +31,14 @@ exploring the data, and getting acquainted with the 3 tables. */
 
 
 /* QUESTIONS 
-/* Q1: Some of the facilities charge a fee to members, but some do not.
+Q1: Some of the facilities charge a fee to members, but some do not.
 Write a SQL query to produce a list of the names of the facilities that do. */
 
 SELECT 
     *
 FROM `Facilities`
 WHERE 
-    membercost !=0;
+    membercost >0; -- greater than zero means charge a fee
 
 
 
@@ -46,7 +46,7 @@ WHERE
 /* Q2: How many facilities do not charge a fee to members? */
 
 SELECT 
-    COUNT( * ) 
+    * 
 FROM Facilities
 WHERE 
     membercost = 0;
@@ -66,7 +66,7 @@ SELECT
     monthlymaintenance
 FROM `Facilities`
 WHERE 
-    membercost !=0 
+    membercost > 0   -- greater than zero means charge a fee
     AND membercost < monthlymaintenance * 0.2;
 
 
@@ -76,10 +76,7 @@ WHERE
 Try writing the query without using the OR operator. */
 
 SELECT 
-    facid, 
-    name, 
-    membercost, 
-    monthlymaintenance
+    *
 FROM `Facilities`
 WHERE 
     facid IN (1,5);
@@ -98,7 +95,7 @@ SELECT
     CASE 
         WHEN monthlymaintenance > 100 THEN 'expensive'
         ELSE 'cheap'
-    END AS cost_label
+    END AS cost_label -- new column with label
 FROM Facilities;
 
 
@@ -125,10 +122,10 @@ the member name. */
 -- only booking has info of which member use which facility 
 
 SELECT DISTINCT
-    m.surname,  -- had issue using this code " m.surname || ' ' || m.firstname AS member_name "" as only returns 0, and CONCAT() gives an error
-    m.firstname, 
-    subq.facid,
-    subq.fac_name 
+    m.surname,  -- had issue using this code " m.surname || ' ' || m.firstname AS member_name "" as only returns 0, and CONCAT gives an error
+    m.firstname
+    -- , subq.facid,   -- add these if you want to know which particular Tennis Court
+    -- subq.fac_name 
 FROM (
     SELECT 
         b.facid,
@@ -219,7 +216,7 @@ ORDER BY
 
 
 /* PART 2: SQLite
-/* We now want you to jump over to a local instance of the database on your machine. 
+We now want you to jump over to a local instance of the database on your machine. 
 
 Copy and paste the LocalSQLConnection.py script into an empty Jupyter notebook, and run it. 
 
@@ -231,7 +228,7 @@ You should see the output from the initial query 'SELECT * FROM FACILITIES'.
 Complete the remaining tasks in the Jupyter interface. If you struggle, feel free to go back
 to the PHPMyAdmin interface as and when you need to. 
 
-You'll need to paste your query into value of the 'query1' variable and run the code block again to get an output.
+You'll need to paste your query into value of the 'query1' variable and run the code block again to get an output. */
  
 QUESTIONS:
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
@@ -290,8 +287,8 @@ ORDER BY
 /* Q12: Find the facilities with their usage by member, but not guests */
 
 SELECT
-    f.name AS fac_nam,
-    subq.facid, 
+    f.name AS fac_name, -- GROUP By
+    subq.facid, -- GROUP By
     COUNT( subq.memid ) AS member_usage
 FROM (
     -- subq, return real members and which facility id
@@ -304,6 +301,7 @@ FROM (
 LEFT JOIN Facilities AS f 
     USING(facid)
 GROUP BY 
+    f.name, 
     subq.facid
 ORDER BY 
     member_usage DESC;
